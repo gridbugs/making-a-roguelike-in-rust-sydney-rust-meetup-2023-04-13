@@ -37,4 +37,12 @@ Games resembling the 1980 computer game Rogue
 
 ---
 
+![bg 90%](boat-journey-collage.png)
 
+---
+
+![bg 90%](boat-journey-frontends.png)
+
+---
+
+![bg 90%](arch.png)
