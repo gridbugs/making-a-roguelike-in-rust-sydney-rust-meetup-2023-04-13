@@ -62,10 +62,11 @@ Games resembling the 1980 computer game Rogue
 
 ![bg 90%](arch.png)
 
-
 ---
 
 ## Building WGPU exe after small change
+
+ - most debugging is done on graphical exe
 
 ```
 $ cargo build --manifest-path wgpu/Cargo.toml
@@ -77,9 +78,15 @@ $ cargo build --manifest-path wgpu/Cargo.toml
 ```
 
  - 6 second rebuild time is annoying when playtesting
- - the WGPU exe has 255 dependencies (at time of writing)
+ - the WGPU exe has 255 dependencies on linux with vulkan backend
 
 ---
+
+![bg 90%](arch2.png)
+
+---
+
+## Build SDL2 exe after small change
 
 ```
 $ cargo build --manifest-path sdl2/Cargo.toml
@@ -90,3 +97,68 @@ $ cargo build --manifest-path sdl2/Cargo.toml
     Finished dev [unoptimized + debuginfo] target(s) in 2.40s
 ```
 
+ - the SDL2 exe has 96 dependencies
+ - requires SDL2 libraries to be installed/distributed
+ - text anti-aliasing doesn't work properly and runtime performance is worse than WGPU exe
+ - build times much faster on linux compared to WGPU exe
+
+---
+
+## Ad hoc state machines with linear witnesses
+
+---
+
+![bg 90%](input-modes.png)
+
+---
+
+```rust
+impl Game {
+
+    pub fn move_player(&mut self, direction: Direction) { ... }
+
+    pub fn use_ability(&mut self, ability_index: usize) { ... }
+
+    pub fn commit_shop_menu_choice(&mut self, choice: Choice) { ... }
+
+    pub fn commit_blink(&mut self, destination: Coord) { ... }
+}
+```
+---
+
+```rust
+// witness types are public but have no public constructor
+pub struct Playing(());
+pub struct ShopMenu(());
+pub struct AimingBlink(());
+
+pub enum AnyWitness {
+    Playing(Playing),
+    ShopMenu(ShopMenu),
+    AimingBlink(AimingBlink),
+}
+
+impl Game {
+    // mutating methods consume a witness and produce a new witness representing state change
+
+    pub fn move_player(&mut self, direction: Direction, wit: Playing) -> AnyWitness { ... }
+
+    pub fn use_ability(&mut self, ability_index: usize, wit: Playing) -> AnyWitness { ... }
+
+    pub fn commit_shop_menu_choice(&mut self, choice: Choice, wit: ShopMenu) -> Playing { ... }
+
+    pub fn commit_blink(&mut self, destination: Coord, wit: AimingBlink) -> Playing { ... }
+}
+```
+
+---
+
+![bg left:40% 90%](questions.png)
+
+## Questions?
+
+Play/download at [gridbugs.itch.io/boat-journey](https://gridbugs.itch.io/boat-journey)
+
+Source at [github.com/gridbugs/boat-journey](https://github.com/gridbugs/boat-journey)
+
+Devlog at [gridbugs.org/7drl2023-day1](https://www.gridbugs.org/7drl2023-day1/)
